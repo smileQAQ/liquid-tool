@@ -13,6 +13,7 @@ import { createFileRoute } from '@tanstack/react-router'
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as IndexLazycopyImport } from './routes/index.lazy copy'
 
 // Create Virtual Routes
 
@@ -26,6 +27,12 @@ const IndexLazyRoute = IndexLazyImport.update({
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
 
+const IndexLazycopyRoute = IndexLazycopyImport.update({
+  id: '/index/lazy copy',
+  path: '/index/lazy copy',
+  getParentRoute: () => rootRoute,
+} as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -37,6 +44,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexLazyImport
       parentRoute: typeof rootRoute
     }
+    '/index/lazy copy': {
+      id: '/index/lazy copy'
+      path: '/index/lazy copy'
+      fullPath: '/index/lazy copy'
+      preLoaderRoute: typeof IndexLazycopyImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -44,32 +58,37 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
+  '/index/lazy copy': typeof IndexLazycopyRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
+  '/index/lazy copy': typeof IndexLazycopyRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexLazyRoute
+  '/index/lazy copy': typeof IndexLazycopyRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/index/lazy copy'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/index/lazy copy'
+  id: '__root__' | '/' | '/index/lazy copy'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
+  IndexLazycopyRoute: typeof IndexLazycopyRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
+  IndexLazycopyRoute: IndexLazycopyRoute,
 }
 
 export const routeTree = rootRoute
@@ -82,11 +101,15 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
-        "/"
+        "/",
+        "/index/lazy copy"
       ]
     },
     "/": {
       "filePath": "index.lazy.tsx"
+    },
+    "/index/lazy copy": {
+      "filePath": "index.lazy copy.tsx"
     }
   }
 }
