@@ -1,6 +1,6 @@
 import { Plugin } from "vite";
 import bodyParser from 'body-parser';
-import { vitePluginSassMerge, viteGenerateDOM } from "./vite-buildLiquid";
+import { viteGenerateLiquid, createLiquidProject, getProjectData } from "./vite-buildLiquid";
 import path from "path";
 
 export default function viteFunctionBus(): Plugin {
@@ -11,18 +11,31 @@ export default function viteFunctionBus(): Plugin {
         },
         configureServer(server) {
             server.middlewares.use(bodyParser.json());
-            server.middlewares.use((req, res, next) => {
+            server.middlewares.use(async (req, res, next) => {
                 const root_url = process.cwd();
                 const params = req.body;
-                if (req.url === '/create-project') {
-
-                    res.end(JSON.stringify({code: 200, message: `create project ${params.folder} success`}))
-                }else if(req.url === '/build-liquid'){
-                    vitePluginSassMerge({dir:path.join(root_url,`/src/pages/${params.folder}`), output: path.join(root_url,`/src/pages/${params.folder}/index.css`)});
-                    res.end(JSON.stringify({code: 200, message: `create project ${params.folder} success`}))
-                }else{
-                    next();
+                switch(req.url){
+                    case '/getProjectData': {
+                        const data = await getProjectData({dir: params.folder});
+                        res.end(JSON.stringify({code: 200, data:data}));
+                    }
+                    break;
+                    case '/create-project':
+                        createLiquidProject({ folder: params.newName});
+                        res.end(JSON.stringify({code: 200, message: `create project ${params.folder} success`}))
+                    break;
+                    case '/build-liquid':
+                        viteGenerateLiquid({dom: params.dom, dir:path.join(root_url,`/src/pages/${params.folder}`), output: path.join(root_url,`/src/pages/${params.folder}/dist`)});
+                        res.end(JSON.stringify({code: 200, message: `build liquid ${params.folder} success`}))
+                    break;
+                    case '/add-settings':
+                        res.end(JSON.stringify({code: 200, message: `create liquid ${params.folder} success`}))
+                    break;
+                    default:
+                        next();
+                    break;
                 }
+
             })
         }
     }

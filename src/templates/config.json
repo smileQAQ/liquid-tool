@@ -1,0 +1,10 @@
+{
+  "name": "{{name}}",
+  "settings": [],
+  "blocks": [],
+  "presets": [
+    {
+      "name": "{{name}}"
+    }
+  ]
+}

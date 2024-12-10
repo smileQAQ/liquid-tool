@@ -3,7 +3,9 @@ import {
   Button,
   ConfigProvider,
   Flex,
+  Input,
   Layout,
+  Modal,
   Select,
   Space,
   message,
@@ -13,6 +15,7 @@ import { Content, Header } from "antd/es/layout/layout";
 import { useEffect, useRef, useState } from "react";
 import { css } from "@emotion/react";
 import { post } from "../util/request";
+import Panel from "../components/Panel";
 
 const pages = import.meta.glob("/src/pages/**/index.tsx");
 
@@ -30,12 +33,15 @@ const headerCss = css`
 `;
 
 function RouteComponent() {
-  const [fileList, setfileList] = useState<Object[]>();
+  const [fileList, setFileList] = useState<object[]>();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [projectName, setProjectName] = useState("");
   const [selectedPage, setSelectedPage] = useState<string | null>(null);
   const [Component, setComponent] = useState<React.ComponentType | null>(null);
-  const contentRef = useRef(null);
+  const [domString, setDomString] = useState<string | null>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    setfileList(
+    setFileList(
       Object.keys(pages).map((v) => {
         return {
           value: v,
@@ -54,9 +60,28 @@ function RouteComponent() {
         setComponent(() => module.default);
       };
       loadComponent();
-      console.log(contentRef.current);
+
+      post<{ data: string }>(
+        "/getProjectData",
+        {
+          folder: selectedPage.split("/").at(-2),
+        }
+      ).then(res=>{
+        console.log(JSON.parse(res.data));
+      });
     }
   }, [selectedPage]);
+
+  useEffect(() => {
+    if (Component) {
+      const timer = setTimeout(() => {
+        if (contentRef.current) {
+          setDomString(contentRef.current.innerHTML);
+        }
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [Component]);
 
   const handleSelectChange = (value: string) => {
     setSelectedPage(value);
@@ -91,6 +116,7 @@ function RouteComponent() {
                       "/build-liquid",
                       {
                         folder: selectedPage.split("/").at(-2),
+                        dom: domString
                       }
                     );
                     message.open({
@@ -103,25 +129,35 @@ function RouteComponent() {
                 </Button>
                 <Button
                   onClick={async () => {
-                    if (!selectedPage) return;
-                    const data = await post<{ message: string }>(
-                      "/create-project",
-                      { folder: selectedPage.split("/").at(-2) }
-                    );
-                    message.open({
-                      type: "success",
-                      content: data.message,
-                    });
+                    setIsModalOpen(true)
                   }}
                 >
                   新建项目
                 </Button>
+                <Modal title="新建项目" open={isModalOpen} onOk={async ()=>{
+                  const data = await post<{ message: string }>(
+                    "/create-project",
+                    { newName: projectName}
+                  );
+                    message.open({
+                      type: "success",
+                      content: data.message,
+                    });
+                    setIsModalOpen(false)
+                }} onCancel={()=>{setIsModalOpen(false)}}>
+                  <Flex >
+                    <div>项目名称</div>
+                    <Input value={projectName} onChange={(e) => setProjectName(e.target.value)}></Input>
+                  </Flex>
+                </Modal>
               </Space>
             </Flex>
           </Header>
           <Layout>
             <Content ref={contentRef}>{Component && <Component />}</Content>
-            <Sider></Sider>
+            <Sider>
+              <Panel></Panel>
+            </Sider>
           </Layout>
         </Layout>
       </ConfigProvider>

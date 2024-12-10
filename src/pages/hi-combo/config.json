@@ -1,5 +1,5 @@
 {
-  "name": "ender-5",
+  "name": "hi-combo",
   "settings": [{
     "type": "text",
     "id": "section_faq_title",
@@ -9,7 +9,7 @@
   "blocks": [],
   "presets": [
     {
-      "name": "ender-5"
+      "name": "hi-combo"
     }
   ]
 }
