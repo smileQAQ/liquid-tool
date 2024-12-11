@@ -1,11 +1,14 @@
 {
   "name": "ender-5",
-  "settings": [{
-    "type": "text",
-    "id": "section_faq_title",
-    "label": "FAQ 标题",
-    "default": "Frequently asked questions"
-  }],
+  "settings": [
+    {
+      "type": "text",
+      "id": "section_faq_title",
+      "label": "FAQ 标题",
+      "value": "Frequent  sdfsdfsss",
+      "default": "Frequently askedasas"
+    }
+  ],
   "blocks": [],
   "presets": [
     {

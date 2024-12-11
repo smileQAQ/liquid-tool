@@ -16,6 +16,9 @@ import { useEffect, useRef, useState } from "react";
 import { css } from "@emotion/react";
 import { post } from "../util/request";
 import Panel from "../components/Panel";
+import { Config } from "../util/settings";
+import Selecto from "react-selecto";
+import Scan from "../components/Scan";
 
 const pages = import.meta.glob("/src/pages/**/index.tsx");
 
@@ -34,6 +37,7 @@ const headerCss = css`
 
 function RouteComponent() {
   const [fileList, setFileList] = useState<object[]>();
+  const [fileData, setFileData] = useState<Config[]>();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [projectName, setProjectName] = useState("");
   const [selectedPage, setSelectedPage] = useState<string | null>(null);
@@ -67,7 +71,7 @@ function RouteComponent() {
           folder: selectedPage.split("/").at(-2),
         }
       ).then(res=>{
-        console.log(JSON.parse(res.data));
+        setFileData(JSON.parse(res.data));
       });
     }
   }, [selectedPage]);
@@ -85,6 +89,7 @@ function RouteComponent() {
 
   const handleSelectChange = (value: string) => {
     setSelectedPage(value);
+    window.location.hash = value.split("/").at(-2) ?? "";
   };
 
   return (
@@ -154,9 +159,13 @@ function RouteComponent() {
             </Flex>
           </Header>
           <Layout>
-            <Content ref={contentRef}>{Component && <Component />}</Content>
-            <Sider>
-              <Panel></Panel>
+            <Content ref={contentRef}>
+              <Scan>
+                {Component && <Component />}
+              </Scan>
+            </Content>
+            <Sider width={400}>
+              {fileData && <Panel fileData={fileData}></Panel>}
             </Sider>
           </Layout>
         </Layout>

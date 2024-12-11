@@ -1,15 +1,10 @@
 {
-  "name": "hi-combo",
-  "settings": [{
-    "type": "text",
-    "id": "section_faq_title",
-    "label": "FAQ 标题",
-    "default": "Frequently asked questions"
-  }],
+  "name": "ender-5",
+  "settings": [],
   "blocks": [],
   "presets": [
     {
-      "name": "hi-combo"
+      "name": "ender-5"
     }
   ]
 }

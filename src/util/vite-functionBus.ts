@@ -2,6 +2,7 @@ import { Plugin } from "vite";
 import bodyParser from 'body-parser';
 import { viteGenerateLiquid, createLiquidProject, getProjectData } from "./vite-buildLiquid";
 import path from "path";
+import fs from "fs";
 
 export default function viteFunctionBus(): Plugin {
     return {
@@ -30,6 +31,16 @@ export default function viteFunctionBus(): Plugin {
                     break;
                     case '/add-settings':
                         res.end(JSON.stringify({code: 200, message: `create liquid ${params.folder} success`}))
+                    break;
+                    case '/updateJson':{
+                        const filePath = path.join(root_url, "/src/pages/", params.path);
+                        fs.writeFileSync(filePath, JSON.stringify(params.json, null, 2));
+                        res.end(JSON.stringify({code: 200, message: `update json ${params.path} success`}));
+                    }
+                    break;
+                    case '/relevance':{
+                        res.end(JSON.stringify({code: 200, message: `update json ${params.path} success`}));
+                    }
                     break;
                     default:
                         next();
