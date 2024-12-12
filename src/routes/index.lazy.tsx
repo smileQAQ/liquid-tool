@@ -45,10 +45,8 @@ function RouteComponent() {
   const [Component, setComponent] = useState<React.ComponentType | null>(null);
   const [domString, setDomString] = useState<string | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  console.log(fileData)
 
   useEffect(() => {
-
     setFileList(
       Object.keys(pages).map((v) => {
         return {
@@ -69,12 +67,9 @@ function RouteComponent() {
       };
       loadComponent();
 
-      post<{ data: string }>(
-        "/getProjectData",
-        {
-          folder: selectedPage.split("/").at(-2),
-        }
-      ).then(res=>{
+      post<{ data: string }>("/getProjectData", {
+        folder: selectedPage.split("/").at(-2),
+      }).then((res) => {
         setFileData(JSON.parse(res.data));
       });
     }
@@ -125,7 +120,7 @@ function RouteComponent() {
                       "/build-liquid",
                       {
                         folder: selectedPage.split("/").at(-2),
-                        dom: domString
+                        dom: domString,
                       }
                     );
                     message.open({
@@ -138,25 +133,35 @@ function RouteComponent() {
                 </Button>
                 <Button
                   onClick={async () => {
-                    setIsModalOpen(true)
+                    setIsModalOpen(true);
                   }}
                 >
                   新建项目
                 </Button>
-                <Modal title="新建项目" open={isModalOpen} onOk={async ()=>{
-                  const data = await post<{ message: string }>(
-                    "/create-project",
-                    { newName: projectName}
-                  );
+                <Modal
+                  title="新建项目"
+                  open={isModalOpen}
+                  onOk={async () => {
+                    const data = await post<{ message: string }>(
+                      "/create-project",
+                      { newName: projectName }
+                    );
                     message.open({
                       type: "success",
                       content: data.message,
                     });
-                    setIsModalOpen(false)
-                }} onCancel={()=>{setIsModalOpen(false)}}>
-                  <Flex >
+                    setIsModalOpen(false);
+                  }}
+                  onCancel={() => {
+                    setIsModalOpen(false);
+                  }}
+                >
+                  <Flex>
                     <div>项目名称</div>
-                    <Input value={projectName} onChange={(e) => setProjectName(e.target.value)}></Input>
+                    <Input
+                      value={projectName}
+                      onChange={(e) => setProjectName(e.target.value)}
+                    ></Input>
                   </Flex>
                 </Modal>
               </Space>
@@ -164,9 +169,7 @@ function RouteComponent() {
           </Header>
           <Layout>
             <Content ref={contentRef}>
-              <Scan>
-                {Component && <Component />}
-              </Scan>
+              <Scan>{Component && <Component />}</Scan>
             </Content>
             <Sider width={400}>
               {fileData && <Panel fileData={fileData}></Panel>}

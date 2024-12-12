@@ -1,6 +1,6 @@
-import fs from 'fs';
-import path from 'path';
-import * as sass from 'sass';
+import fs from "fs";
+import path from "path";
+import * as sass from "sass";
 
 interface CreateLiquidProjectOptions {
   folder: string;
@@ -21,14 +21,14 @@ async function copyTemplateFiles(
       await fs.promises.mkdir(targetPath, { recursive: true });
       await copyTemplateFiles(sourcePath, targetPath, replacements);
     } else if (file.isFile()) {
-      let content = await fs.promises.readFile(sourcePath, 'utf-8');
+      let content = await fs.promises.readFile(sourcePath, "utf-8");
 
       for (const [key, value] of Object.entries(replacements)) {
         const placeholder = `{{${key}}}`;
         content = content.replaceAll(placeholder, value);
       }
 
-      await fs.promises.writeFile(targetPath, content, 'utf-8');
+      await fs.promises.writeFile(targetPath, content, "utf-8");
     }
   }
 }
@@ -36,8 +36,8 @@ async function copyTemplateFiles(
 export async function createLiquidProject(options: CreateLiquidProjectOptions) {
   const { folder } = options;
   const rootUrl = process.cwd();
-  const folderPath = path.join(rootUrl, 'src/pages', folder);
-  const templateDir = path.join(rootUrl, 'src/templates');
+  const folderPath = path.join(rootUrl, "src/pages", folder);
+  const templateDir = path.join(rootUrl, "src/templates");
 
   const replacements = {
     name: folder,
@@ -54,40 +54,49 @@ export async function createLiquidProject(options: CreateLiquidProjectOptions) {
   }
 }
 
-export async function viteGenerateLiquid(options: { dir: string; output: string; dom: string }) { 
-  const { dir, output, dom} = options;
-  const sassFiles = fs.readdirSync(dir).filter(file => file.endsWith('.scss') || file.endsWith('.sass'));
-  const outputCss = path.join(output || dir, 'index.css');
-  const outputLiquid = path.join(output || dir, 'index.liquid');
-  
+export async function viteGenerateLiquid(options: {
+  dir: string;
+  output: string;
+  dom: string;
+}) {
+  const { dir, output, dom } = options;
+  const sassFiles = fs
+    .readdirSync(dir)
+    .filter((file) => file.endsWith(".scss") || file.endsWith(".sass"));
+  const outputCss = path.join(output || dir, "index.css");
+  const outputLiquid = path.join(output || dir, "index.liquid");
+
   await fs.promises.mkdir(output, { recursive: true });
   if (sassFiles.length === 0) {
-    console.log('没有找到 Sass 文件');
+    console.log("没有找到 Sass 文件");
     return;
   }
 
-  let mergedSassContent = '';
-  sassFiles.forEach(file => {
+  let mergedSassContent = "";
+  sassFiles.forEach((file) => {
     const filePath = path.join(dir, file);
-    const fileContent = fs.readFileSync(filePath, 'utf-8');
-    mergedSassContent += fileContent + '\n';
+    const fileContent = fs.readFileSync(filePath, "utf-8");
+    mergedSassContent += fileContent + "\n";
   });
 
-  const tempSassPath = path.join(dir, 'merged.scss');
+  const tempSassPath = path.join(dir, "merged.scss");
   fs.writeFileSync(tempSassPath, mergedSassContent);
-  
+
   let resultCss;
   try {
     resultCss = await sass.compileAsync(tempSassPath);
     fs.writeFileSync(outputCss, resultCss.css.toString());
     console.log(`CSS 已生成并保存到: ${outputCss}`);
   } catch (error) {
-    console.error('Sass 编译失败:', error);
+    console.error("Sass 编译失败:", error);
   }
   fs.unlinkSync(tempSassPath);
 
-  const config = await fs.promises.readFile(path.join(dir, "config.json"), 'utf-8');
-const htmlContent = `<style>
+  const config = await fs.promises.readFile(
+    path.join(dir, "config.json"),
+    "utf-8"
+  );
+  const htmlContent = `<style>
   ${resultCss?.css.toString()}
 </style>
 
@@ -106,6 +115,9 @@ ${dom}
 
 export async function getProjectData(options: { dir: string }) {
   const { dir } = options;
-  const config = await fs.promises.readFile(path.join(process.cwd(), `/src/pages/${dir}`, 'config.json'), 'utf-8');
+  const config = await fs.promises.readFile(
+    path.join(process.cwd(), `/src/pages/${dir}`, "config.json"),
+    "utf-8"
+  );
   return config;
 }

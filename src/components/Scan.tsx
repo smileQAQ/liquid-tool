@@ -9,9 +9,14 @@ export function Scan({ children }: { children: React.ReactNode }) {
 
   const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
     const target = event.target as HTMLElement;
-    if (target.attributes.getNamedItem('data-sid')) {
+    if (target.attributes.getNamedItem("data-sid")) {
+      const allElements = refDom.current?.querySelectorAll("[data-sid]");
+      const index = Array.from(allElements || []).indexOf(target);
+      console.log(index);
+      counterStore.setSelectIndex = index;
       setTarget(target);
-    }else{
+    } else {
+      counterStore.setSelectIndex = -1;
       setTarget(null);
     }
   };
@@ -19,7 +24,7 @@ export function Scan({ children }: { children: React.ReactNode }) {
   return (
     <div ref={refDom} onClick={handleClick} style={{ position: "relative" }}>
       {children}
-      {target && <FocusBox target={target}/>}
+      {target && <FocusBox target={target} />}
     </div>
   );
 }
@@ -29,13 +34,13 @@ function FocusBox({ target }: { target: HTMLElement | null }) {
 
   const rect = target.getBoundingClientRect();
   const style = {
-    position: 'absolute' as const,
+    position: "absolute" as const,
     top: `${target.offsetTop}px`,
     left: `${rect.left}px`,
     width: `${rect.width}px`,
     height: `${rect.height}px`,
-    border: '1px solid red',
-    pointerEvents: 'none' as const
+    border: "1px solid red",
+    pointerEvents: "none" as const,
   };
 
   return <div style={style}></div>;
