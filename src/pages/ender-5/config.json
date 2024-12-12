@@ -5,8 +5,15 @@
       "type": "text",
       "id": "section_faq_title",
       "label": "FAQ 标题",
-      "value": "Frequent  sdfsdfsss",
+      "value": "Frequent  sdf",
       "default": "Frequently askedasas"
+    },
+    {
+      "type": "text",
+      "id": "text_1733997774718",
+      "label": "aaa",
+      "value": "123",
+      "default": ""
     }
   ],
   "blocks": [],

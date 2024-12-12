@@ -1,24 +1,28 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Config } from "../util/settings";
 import PanelItem from "./PanelItem";
 import { Button, Space, Select, Modal, Input, message, Popconfirm, Flex, Divider } from "antd";
 import { post } from "../util/request";
-import { useRouterState } from "@tanstack/react-router";
+import { useMainStore } from "./mainProvider";
 
 export default function Panel({ fileData }: { fileData: Config }) {
-  const routerState = useRouterState();
+  const mainStore = useMainStore();
   const [config, setConfig] = useState<Config>(fileData);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [newFieldType, setNewFieldType] = useState<string | null>("text");
   const [newFieldLabel, setNewFieldLabel] = useState<string>('');
   const [newFieldOptions, setNewFieldOptions] = useState<string[]>([]);
 
+  useEffect(()=>{
+      setConfig(fileData)
+  },[fileData])
+
   const handleAddField = () => {
     setIsModalVisible(true);
   };
-
+  
   const handleSave = async () => {
-    const data = await post<{ message: string }>("/updateJson", { path: routerState.location.hash + "/config.json", json: config });
+    const data = await post<{ message: string }>("/updateJson", { path: mainStore.getSelectFolder + "/config.json", json: config });
     message.open({
       type: "success",
       content: data.message,
@@ -38,7 +42,7 @@ export default function Panel({ fileData }: { fileData: Config }) {
         settings: [...config.settings, newField]
       } as Config;
       setConfig(updatedConfig);
-      const data = await post<{ message: string }>("/updateJson", { path: routerState.location.hash + "/config.json", json: updatedConfig });
+      const data = await post<{ message: string }>("/updateJson", { path: mainStore.getSelectFolder + "/config.json", json: updatedConfig });
       message.open({
         type: "success",
         content: data.message,
@@ -52,7 +56,7 @@ export default function Panel({ fileData }: { fileData: Config }) {
       settings: config.settings.filter(setting => setting.id !== fieldId)
     };
     setConfig(updatedConfig);
-    const data = await post<{ message: string }>("/updateJson", { path: routerState.location.hash + "/config.json", json: updatedConfig });
+    const data = await post<{ message: string }>("/updateJson", { path: mainStore.getSelectFolder + "/config.json", json: updatedConfig });
     message.open({
       type: "success",
       content: data.message,
@@ -98,9 +102,12 @@ export default function Panel({ fileData }: { fileData: Config }) {
             <Button type="primary" onClick={async ()=>{
               const data = await post<{ message: string }>("/relevance", {
                 index: index,
-
+                path: mainStore.getSelectFolder
               });
-              console.log(data)
+              message.open({
+                type: "success",
+                content: "关联成功",
+              });
             }}>关联</Button>
             <Popconfirm
                 title="你确定要删除这个字段吗？"

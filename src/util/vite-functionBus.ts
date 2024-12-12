@@ -1,8 +1,12 @@
 import { Plugin } from "vite";
-import bodyParser from 'body-parser';
+import bodyParser, { text } from 'body-parser';
 import { viteGenerateLiquid, createLiquidProject, getProjectData } from "./vite-buildLiquid";
 import path from "path";
 import fs from "fs";
+import * as babelParser from "@babel/parser";
+import { traverse } from "@babel/core";
+import CodeGenerator from "@babel/generator";
+import { Config } from "./settings";
 
 export default function viteFunctionBus(): Plugin {
     return {
@@ -38,8 +42,58 @@ export default function viteFunctionBus(): Plugin {
                         res.end(JSON.stringify({code: 200, message: `update json ${params.path} success`}));
                     }
                     break;
-                    case '/relevance':{
-                        res.end(JSON.stringify({code: 200, message: `update json ${params.path} success`}));
+                    case '/relevance': {
+                        try {
+                            const configData = JSON.parse(fs.readFileSync(path.join(root_url, `/src/pages/${params.path}/config.json`), 'utf-8')) as Config;
+                            const files = fs.readFileSync(path.join(root_url, `/src/pages/${params.path}/index.tsx`), 'utf-8');
+                            const ast = babelParser.parse(files, {
+                                sourceType: "module",
+                                plugins: ["typescript", "jsx"], // 支持 TypeScript 和 JSX
+                            });
+                            traverse(ast, {
+                                JSXElement(path) {
+                                    const attributes = path.node.openingElement.attributes;
+                                    const hasDataSid = attributes.some(
+                                        (attr) =>
+                                            attr.type === "JSXAttribute" &&
+                                            attr.name.name === "data-sid"
+                                    );
+                                    if (hasDataSid) {
+
+                                        path.traverse({
+                                            JSXText(textPath) {
+                                                console.log(textPath)
+                                                textPath.node.value = `{config.settings[${params.index}].value}`;
+                                            },
+                                            NumberLiteral(path) {
+                                                path.node.value = params.index;
+                                            }
+                                        });
+
+                                        if (path.node.openingElement.name.type === "JSXIdentifier") {
+                                            path.node.openingElement.attributes = attributes.map(attr => {
+                                                if (attr.type === "JSXAttribute" && attr.name.name === "data-sid") {
+                                                    return {
+                                                        ...attr,
+                                                        value: {
+                                                            type: "JSXExpressionContainer",
+                                                            expression: babelParser.parseExpression(`'${configData.settings[params.index].id}'`),
+                                                        },
+                                                    };
+                                                }
+                                                return attr;
+                                            });
+                                        }
+                                    }
+                                }
+                            });
+                            const code  = CodeGenerator.default(ast).code;
+                            fs.writeFileSync(path.join(root_url, `/src/pages/${params.path}/index.tsx`), code);
+                            res.end(JSON.stringify({ code: 200, message: `Read file ${params.path} success`, data: files }));
+                        } catch (error) {
+                            console.error(error);
+                            res.end(JSON.stringify({ code: 500, message: `Failed to read file ${params.path}`, error: error.message }));
+                        }
                     }
                     break;
                     default:

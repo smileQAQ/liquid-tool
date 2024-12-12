@@ -12,11 +12,16 @@
   "dependencies": {
     "antd": "^5.22.3",
     "lodash": "^4.17.21",
+    "mobx": "^6.13.5",
+    "mobx-react": "^9.2.0",
+    "mobx-react-lite": "^4.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "reactflow": "^11.11.4"
   },
   "devDependencies": {
+    "@babel/generator": "^7.26.3",
+    "@babel/parser": "^7.26.3",
     "@emotion/babel-plugin": "^11.13.5",
     "@emotion/css": "^11.13.5",
     "@emotion/react": "^11.13.5",

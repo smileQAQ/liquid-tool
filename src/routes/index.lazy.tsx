@@ -17,8 +17,8 @@ import { css } from "@emotion/react";
 import { post } from "../util/request";
 import Panel from "../components/Panel";
 import { Config } from "../util/settings";
-import Selecto from "react-selecto";
 import Scan from "../components/Scan";
+import { useMainStore } from "../components/mainProvider";
 
 const pages = import.meta.glob("/src/pages/**/index.tsx");
 
@@ -36,6 +36,7 @@ const headerCss = css`
 `;
 
 function RouteComponent() {
+  const mainStore = useMainStore();
   const [fileList, setFileList] = useState<object[]>();
   const [fileData, setFileData] = useState<Config[]>();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -44,7 +45,10 @@ function RouteComponent() {
   const [Component, setComponent] = useState<React.ComponentType | null>(null);
   const [domString, setDomString] = useState<string | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  console.log(fileData)
+
   useEffect(() => {
+
     setFileList(
       Object.keys(pages).map((v) => {
         return {
@@ -89,7 +93,7 @@ function RouteComponent() {
 
   const handleSelectChange = (value: string) => {
     setSelectedPage(value);
-    window.location.hash = value.split("/").at(-2) ?? "";
+    mainStore.setSelectFolder = value.split("/").at(-2) ?? "";
   };
 
   return (

@@ -1,17 +1,19 @@
 import React from "react";
+import { observer } from "mobx-react-lite";
+import { useMainStore } from "./mainProvider";
 
-export default function Scan({ children }: { children: React.ReactNode }) {
+export function Scan({ children }: { children: React.ReactNode }) {
+  const counterStore = useMainStore();
   const refDom = React.useRef<HTMLDivElement>(null);
   const [target, setTarget] = React.useState<HTMLElement | null>(null);
 
   const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
     const target = event.target as HTMLElement;
-    console.log(target)
-    if (target.classList.contains('child')) {
-      console.log('点击的子元素内容:', target.textContent);
-      alert(`点击的子元素内容: ${target.textContent}`);
+    if (target.attributes.getNamedItem('data-sid')) {
+      setTarget(target);
+    }else{
+      setTarget(null);
     }
-    setTarget(target);
   };
 
   return (
@@ -27,14 +29,17 @@ function FocusBox({ target }: { target: HTMLElement | null }) {
 
   const rect = target.getBoundingClientRect();
   const style = {
-    position: 'absolute',
+    position: 'absolute' as const,
     top: `${target.offsetTop}px`,
     left: `${rect.left}px`,
     width: `${rect.width}px`,
     height: `${rect.height}px`,
     border: '1px solid red',
-    pointerEvents: 'none'
+    pointerEvents: 'none' as const
   };
 
   return <div style={style}></div>;
 }
+
+const ObservedScan = observer(Scan);
+export default ObservedScan;
