@@ -12,7 +12,21 @@
       "type": "text",
       "id": "text_1733997774718",
       "label": "aaa",
-      "value": "123",
+      "value": "123aaddd",
+      "default": ""
+    },
+    {
+      "type": "text",
+      "id": "text_1734058568987",
+      "label": "bbb",
+      "value": "cccbbb",
+      "default": ""
+    },
+    {
+      "type": "text",
+      "id": "text_1734072089382",
+      "label": "gggg",
+      "value": "dddfddfdfd",
       "default": ""
     }
   ],

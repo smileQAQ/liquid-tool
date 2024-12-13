@@ -92,57 +92,76 @@ export default function viteFunctionBus(): Plugin {
                   sourceType: "module",
                   plugins: ["typescript", "jsx"],
                 });
+                let marker = 0;
                 traverse(ast, {
                   JSXElement(path) {
                     const attributes = path.node.openingElement.attributes;
-                    const hasDataSid = attributes.some(
-                      (attr, index) =>
-                        attr.type === "JSXAttribute" &&
-                        attr.name.name === "data-sid" &&
-                        index === params.selectIndex
-                    );
-                    if (hasDataSid) {
-                      path.traverse({
-                        JSXText(textPath) {
-                          console.log(textPath);
-                          textPath.node.value = `{config.settings[${params.index}].value}`;
-                        },
-                        NumberLiteral(path) {
-                          path.node.value = params.index;
-                        },
-                      });
+                    attributes.forEach((attr) => {
+                      if (attr.type === "JSXAttribute" &&  attr.name.name === "data-sid") {
+                       if(marker++ === params.selectIndex) {
+                        const { attributes } = path.node.openingElement;
+                        const children = path.node.children;
+                        const attr_sid = attributes.find((attr) => attr.type === 'JSXAttribute' && attr.name.name === 'data-sid');
 
-                      if (
-                        path.node.openingElement.name.type === "JSXIdentifier"
-                      ) {
-                        path.node.openingElement.attributes = attributes.map(
-                          (attr) => {
-                            if (
-                              attr.type === "JSXAttribute" &&
-                              attr.name.name === "data-sid"
-                            ) {
-                              return {
-                                ...attr,
-                                value: {
-                                  type: "JSXExpressionContainer",
-                                  expression: babelParser.parseExpression(
-                                    `'${configData.settings[params.index].id}'`
-                                  ),
-                                },
-                              };
-                            }
-                            return attr;
+                        if (attr_sid && attr_sid.type === "JSXAttribute") {
+                          attr_sid.value = {
+                            type: "JSXExpressionContainer",
+                            expression: babelParser.parseExpression(
+                              `'${configData.settings[params.index].id}'`
+                            ),
+                          };
+                        }
+                        children.forEach((child) => {
+                          if (child.type === "JSXText") {
+                            child.value = `{config.settings[${params.index}].value}`;
+                          }else if(child.type === "JSXExpressionContainer") {
+                            child.expression = babelParser.parseExpression(
+                              `config.settings[${params.index}].value`
+                            );
                           }
-                        );
+                        });
+                       }
+                      }
+                    });
+
+                    const oe = path.node.openingElement;
+                    let isSid = false;
+                    if(oe.type === 'JSXOpeningElement' && oe.name.type === 'JSXIdentifier' && oe.name.name === 'SM'){
+                      
+                      oe.attributes.forEach((attr) => {
+                      //   if(attr.type === 'JSXAttribute' && attr.name.name === 'element') {
+                      //   }
+                         if (attr.type === 'JSXAttribute' && attr.name.name === 'data-id') {
+                          isSid = true;
+                          attr.value = {
+                            type: 'JSXExpressionContainer',
+                            expression: babelParser.parseExpression(`'${configData.settings[params.index].id}'`),
+                          };
+                        }
+                      });
+                      if(!isSid) {
+                        oe.attributes.push({
+                          type: 'JSXAttribute',
+                          name: {
+                            type: 'JSXIdentifier',
+                            name: 'data-id',
+                          },
+                          value: {
+                            type: 'JSXExpressionContainer',
+                            expression: babelParser.parseExpression(`'${configData.settings[params.index].id}'`),
+                          },
+                        });
+                        isSid = false;
                       }
                     }
                   },
                 });
                 const code = CodeGenerator.default(ast).code;
-                fs.writeFileSync(
-                  path.join(root_url, `/src/pages/${params.path}/index.tsx`),
-                  code
-                );
+                console.log(code);
+                // fs.writeFileSync(
+                //   path.join(root_url, `/src/pages/${params.path}/index.tsx`),
+                //   code
+                // );
                 res.end(
                   JSON.stringify({
                     code: 200,

@@ -1,6 +1,8 @@
 import fs from "fs";
 import path from "path";
 import * as sass from "sass";
+import * as cheerio from 'cheerio';
+
 
 interface CreateLiquidProjectOptions {
   folder: string;
@@ -96,11 +98,27 @@ export async function viteGenerateLiquid(options: {
     path.join(dir, "config.json"),
     "utf-8"
   );
+
+  const $ = cheerio.load(dom);
+  $.root().find('[data-sid]').each((index, element) => {
+    const dataSid = $(element).attr('data-sid');
+    if (dataSid){
+      if(dataSid!='true' && dataSid!='false') {
+        if (element.tagName === 'img') {
+          $(element).attr('src', `{{ ${dataSid} | image_url }}`);
+        } else {
+          $(element).text(`{{ sections.settings.${dataSid} }}`);
+        }
+      }
+      $(element).removeAttr('data-sid');
+    }
+  });
+  
   const htmlContent = `<style>
   ${resultCss?.css.toString()}
 </style>
 
-${dom}
+${$('body').html()}
 
 <script>
 </script>
@@ -108,7 +126,6 @@ ${dom}
 {% schema %}
   ${config.toString()}
 {% endschema %}`;
-
   fs.writeFileSync(outputLiquid, htmlContent);
   console.log(`liquid 已生成并保存到: ${outputLiquid}`);
 }

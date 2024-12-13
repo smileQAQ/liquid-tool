@@ -3,25 +3,23 @@ import "./pc.scss";
 import "./mb.scss";
 import "./index";
 import config from "./config.json";
+import SM from '../../components/ScanMark';
 export default function Index() {
-  const domContent = (
-    <div>
+  const domContent = <div>
       <div>
         <div className="rColor">
-          <p className="ccc" data-sid={"section_faq_title"}>
-            {config.settings[0].value}
-          </p>
-          <img
-            src="https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg"
-            alt=""
-          />
+          <p className="ccc" data-sid={'section_faq_title'}>{config.settings[0].value}</p>
+          <img data-sid src="https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg" alt="" />
         </div>
         <div>
-          <p data-sid>1231</p>
+          <p data-sid={'text_1734058568987'} >{config.settings[2].value}</p>
         </div>
-        <div data-sid>cccc</div>
+        <div data-sid={'text_1734072089382'}>{config.settings[3].value}</div>
+
+        {/* <SM element={<div>{config.settings[3].value}</div>} /> */}
+        <SM element={<p>dfaasdf</p>} />
+        <SM element={<p>123123</p>} data-id={"asdfasdf"}/>
       </div>
-    </div>
-  );
+    </div>;
   return domContent;
 }
