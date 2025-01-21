@@ -97,10 +97,9 @@ export default function viteFunctionBus(): Plugin {
                             };
                           }
 
+                          path.node.children = path.node.children.filter(child => child.type !== 'JSXText');
                           path.node.children.forEach(child => {
-                            if (child.type === 'JSXText') {
-                              child.value = `{config.settings[${params.index}].value}`;
-                            } else if (child.type === 'JSXExpressionContainer') {
+                            if (child.type === 'JSXExpressionContainer') {
                               child.expression = babelParser.parseExpression(`config.settings[${params.index}].value`);
                             }
                           });
